@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>keitaと一緒だよ</title>
+</head>
+<body style="text-align:center;margin-top:100px">
+
+<h1>HAHAHAHAHAHA</h1>
+<button onclick="start()">押すな！</button>
+
+<script>
+function start(){
+
+  const w = window.open("", "", "width=200,height=200");
+
+  w.document.write(`
+    <html>
+    <body style="background:black;color:white;text-align:center">
+        <style>
+img{
+width:100vw;
+height:100vh;
+}
+        </style>
+      <img src="https://keitagames.com/keita.png">
+
+      <script>
+   
+        let pos = {x: 400, y: 400};
+        let vel = {x: 0, y: 0};
+        let acc = {x: 0, y: 0};
+
+        let target = randomTarget();
+
+        let energy = 1;
+        let mood = "hyper";
+
+        const maxSpeed = 14;
+        const maxForce = 0.9;
+
+        function randomTarget(){
+          return {
+            x: Math.random()*screen.availWidth,
+            y: Math.random()*screen.availHeight
+          };
+        }
+
+        // 超頻繁な思考
+        function think(){
+
+          energy += (Math.random()-0.3);
+          energy = Math.max(0.5, Math.min(3, energy));
+
+          const r = Math.random();
+
+          if(r < 0.2){
+            mood = "dash";
+          }else if(r < 0.4){
+            mood = "hunt";
+          }else{
+            mood = "hyper";
+          }
+
+          document.getElementById("state").textContent =
+            mood + " energy=" + energy.toFixed(2);
+
+          target = randomTarget();
+
+        }
+
+        setInterval(think, 800);
+
+        function steer(){
+
+          let desired = {
+            x: target.x - pos.x,
+            y: target.y - pos.y
+          };
+
+          let d = Math.hypot(desired.x, desired.y);
+
+          if(d > 0){
+            desired.x /= d;
+            desired.y /= d;
+
+            let speed = maxSpeed * energy;
+
+            if(mood === "dash") speed *= 1.7;
+            if(mood === "hunt") speed *= 1.3;
+
+            desired.x *= speed;
+            desired.y *= speed;
+          }
+
+          acc.x = desired.x - vel.x;
+          acc.y = desired.y - vel.y;
+
+          let m = Math.hypot(acc.x, acc.y);
+          if(m > maxForce){
+            acc.x = acc.x/m * maxForce;
+            acc.y = acc.y/m * maxForce;
+          }
+        }
+
+        function avoidWalls(){
+
+          const margin = 120;
+
+          if(pos.x < margin) vel.x += 1.5;
+          if(pos.x > screen.availWidth - margin) vel.x -= 1.5;
+
+          if(pos.y < margin) vel.y += 1.5;
+          if(pos.y > screen.availHeight - margin) vel.y -= 1.5;
+        }
+
+        function chaos(){
+
+          // 小刻みな震え（生命感）
+          vel.x += (Math.random()-0.5)*0.8;
+          vel.y += (Math.random()-0.5)*0.8;
+
+          // たまに突進
+          if(Math.random() < 0.01){
+            vel.x += (Math.random()-0.5)*30;
+            vel.y += (Math.random()-0.5)*30;
+          }
+        }
+
+        function update(){
+
+          steer();
+          avoidWalls();
+          chaos();
+
+          vel.x += acc.x;
+          vel.y += acc.y;
+
+          vel.x *= 0.99;
+          vel.y *= 0.99;
+
+          pos.x += vel.x;
+          pos.y += vel.y;
+
+          window.moveTo(pos.x, pos.y);
+
+          requestAnimationFrame(update);
+        }
+
+        // クリックで大暴走
+        document.body.onclick = () => {
+          energy = 3;
+          vel.x += (Math.random()-0.5)*40;
+          vel.y += (Math.random()-0.5)*40;
+        };
+
+        update();
+
+      <\/script>
+    </body>
+    </html>
+  `);
+}
+start();
+
+</script>
+
+</body>
+</html>
